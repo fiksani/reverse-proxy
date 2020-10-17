@@ -2,7 +2,7 @@ version: '2'
 
 services:
   nginx-proxy:
-    image: jwilder/nginx-proxy
+    image: jwilder/nginx-proxy:alpine
     container_name: nginx-proxy
     ports:
       - "80:80"
@@ -10,3 +10,22 @@ services:
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ./ssl:/etc/nginx/certs
+      - ./html:/usr/share/nginx/html
+      - ./vhost.d:/etc/nginx/vhost.d
+  
+  nginx-proxy-letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - DEFAULT_EMAIL=
+    depends_on:
+      - nginx-proxy
+
+
+networks:
+  default:
+    external:
+      name: nginx-proxy
